@@ -84,6 +84,87 @@ body.mode-view #app {
   padding: 0 4px;
 }
 
+.external-browser-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.48);
+}
+
+.external-browser-dialog__panel {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 24px;
+  border: 3px solid var(--bw-black);
+  border-radius: 8px;
+  background: var(--bw-white);
+  color: var(--bw-black);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+}
+
+.external-browser-dialog__title {
+  padding-right: 64px;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+.external-browser-dialog__copy {
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #333;
+}
+
+.external-browser-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.external-browser-dialog__primary,
+.external-browser-dialog__secondary,
+.external-browser-dialog__close {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.external-browser-dialog__primary {
+  padding: 0 16px;
+  border: none;
+  background: var(--bw-black);
+  color: var(--bw-white);
+  text-decoration: none;
+}
+
+.external-browser-dialog__secondary {
+  padding: 0 14px;
+  border: 2px solid var(--bw-black);
+  background: var(--bw-white);
+  color: var(--bw-black);
+}
+
+.external-browser-dialog__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 0 10px;
+  border: none;
+  background: var(--bw-pillar);
+  color: var(--bw-black);
+}
+
 /* Viewport that clips the board and captures interaction. Kept square and sized
    to fit the space left after the sidebar, the page padding, the switch, and the
    gap. */
