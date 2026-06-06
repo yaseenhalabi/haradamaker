@@ -1,0 +1,41 @@
+// Builds the 9x9 Harada board as a 3x3 arrangement of 3x3 blocks.
+// Block index 0..8 follows row-major order (0 = top-left, 4 = center, 8 = bottom-right).
+// Cell index within a block is also 0..8 row-major.
+
+export interface BoardElements {
+  viewport: HTMLDivElement;
+  board: HTMLDivElement;
+  blocks: HTMLDivElement[];
+}
+
+export function buildBoard(mount: HTMLElement): BoardElements {
+  const viewport = document.createElement("div");
+  viewport.className = "board-viewport";
+
+  const board = document.createElement("div");
+  board.className = "board";
+
+  const blocks: HTMLDivElement[] = [];
+
+  for (let b = 0; b < 9; b++) {
+    const block = document.createElement("div");
+    block.className = "block";
+    block.dataset.block = String(b);
+
+    for (let c = 0; c < 9; c++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.dataset.block = String(b);
+      cell.dataset.cell = String(c);
+      block.appendChild(cell);
+    }
+
+    blocks.push(block);
+    board.appendChild(block);
+  }
+
+  viewport.appendChild(board);
+  mount.appendChild(viewport);
+
+  return { viewport, board, blocks };
+}
