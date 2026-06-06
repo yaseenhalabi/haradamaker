@@ -1,6 +1,7 @@
 import "./style.css";
 import { buildBoard } from "./grid.ts";
 import { initZoom } from "./zoom.ts";
+import { initEditing } from "./edit.ts";
 
 const mount = document.getElementById("app");
 if (!mount) {
@@ -8,4 +9,5 @@ if (!mount) {
 }
 
 const elements = buildBoard(mount);
+initEditing(elements);
 initZoom(elements);

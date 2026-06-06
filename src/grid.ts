@@ -27,6 +27,16 @@ export function buildBoard(mount: HTMLElement): BoardElements {
       cell.className = "cell";
       cell.dataset.block = String(b);
       cell.dataset.cell = String(c);
+
+      const text = document.createElement("div");
+      text.className = "cell-text";
+      text.dataset.block = String(b);
+      text.dataset.cell = String(c);
+      // plaintext-only keeps the contenteditable from inserting markup.
+      text.setAttribute("contenteditable", "plaintext-only");
+      text.spellcheck = false;
+      cell.appendChild(text);
+
       block.appendChild(cell);
     }
 
