@@ -3,8 +3,10 @@
   --bw-white: #ffffff;
   --bw-pillar: #d9d9d9; /* light gray tint for the 8 pillars */
   --bw-goal: #1f1f1f; /* dark fill for the central goal */
-  --line-thin: 1px;
-  --line-thick: 3px;
+  /* Line widths are in the board's DOM px space, which is laid out at 3x the
+     viewport (see .board). At overview scale(1/3) these render as 1px/3px. */
+  --line-thin: 3px;
+  --line-thick: 9px;
 }
 
 * {
@@ -41,13 +43,17 @@ body {
   touch-action: none;
 }
 
-/* The square board (3x3 of blocks), transformed for snapped zoom */
+/* The square board (3x3 of blocks), transformed for snapped zoom.
+   Laid out at 3x the viewport so a single block fills the viewport at native
+   scale (scale(1)) in block view — no font/line magnification, crisp text, and
+   a real 16px editing font stays 16px. The overview shrinks it with scale(1/3)
+   (see zoom.ts). */
 .board {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 300%;
+  height: 300%;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(3, minmax(0, 1fr));
@@ -56,7 +62,10 @@ body {
   background: var(--bw-black);
   transform-origin: top left;
   transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
+  /* No `will-change: transform` on purpose: it pins a cached 1x raster of the
+     board, so scaling into a block (scale(3)) just stretches that bitmap and
+     text/lines look pixelated. Without it the browser re-rasterizes at the
+     resting zoom level, keeping text crisp. */
 }
 
 /* Each 3x3 block */
@@ -114,7 +123,9 @@ body {
   justify-content: center;
   padding: 8%;
   text-align: center;
-  font-size: clamp(7px, 15cqmin, 28px);
+  /* px bounds are in the board's 3x DOM space; cqmin already scales with the
+     (now 3x larger) cell container. */
+  font-size: clamp(21px, 15cqmin, 84px);
   line-height: 1.2;
   font-weight: 500;
   color: var(--bw-black);
@@ -139,21 +150,35 @@ body {
   align-items: flex-start;
   justify-content: flex-start;
   text-align: left;
-  font-size: clamp(6px, 9cqmin, 16px);
+  font-size: clamp(18px, 9cqmin, 48px);
 }
 
 .cell-text::-webkit-scrollbar {
   display: none;
 }
 
-/* On small/mobile screens, shrink the cell text so long words fit better. */
+/* Board (zoomed-out) view: cells are non-interactive so a tap zooms into the
+   block instead of focusing the contenteditable text. On touch, focus is driven
+   by the synthetic tap after pointerup, which preventDefault() on pointerdown
+   can't suppress — so we disable pointer events on the text entirely until the
+   board is zoomed into a single block. */
+.board-viewport:not(.zoomed) .cell-text {
+  pointer-events: none;
+}
+
+/* On small/mobile screens, shrink the cell text so long words fit better.
+   (px bounds in the 3x DOM space.) */
 @media (max-width: 600px) {
   .cell-text {
-    font-size: clamp(3px, 11cqmin, 18px);
+    font-size: clamp(9px, 11cqmin, 54px);
   }
 
+  /* iOS auto-zooms the page whenever a focused editable's computed font-size is
+     below 16px (and maximum-scale=1 doesn't reliably stop it). In block view
+     the board is rendered at native scale(1), so a real 16px font both prevents
+     the zoom AND stays a comfortable 16px visually. */
   .cell-text:focus {
-    font-size: clamp(3px, 7cqmin, 13px);
+    font-size: 16px;
   }
 }
 

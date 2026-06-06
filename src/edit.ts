@@ -1,15 +1,19 @@
 import type { BoardElements } from "./grid.ts";
 import { boardStore, cellKey } from "./store.ts";
 
+// Font bounds are in the board's DOM px space, which is laid out at 3x the
+// viewport (see .board / zoom.ts). Block view renders at native scale(1), so
+// these are also the effective visual px there; the overview shows them at 1/3.
+//
 // Lower bound for the auto-fit. Smaller on mobile so long single words like
 // "extraordinary" can still shrink enough to fit inside the smaller cells.
 function minFont(): number {
-  return window.matchMedia("(max-width: 600px)").matches ? 3 : 6;
+  return window.matchMedia("(max-width: 600px)").matches ? 12 : 18;
 }
 // Upper bound when a short entry grows to fill its cell. Smaller on mobile so
 // text stays readable and fits within the smaller cells.
 function maxFont(): number {
-  return window.matchMedia("(max-width: 600px)").matches ? 24 : 40;
+  return window.matchMedia("(max-width: 600px)").matches ? 72 : 120;
 }
 
 // Pillar mirroring: the 8 cells around the goal in the center block are the same
@@ -149,6 +153,16 @@ export function initEditing({ viewport }: BoardElements): void {
     // text doesn't rescale as you type — it behaves like a normal text box.
     el.addEventListener("focus", () => {
       el.style.fontSize = "";
+
+      // Place the caret at the end of the text with nothing selected.
+      const selection = window.getSelection();
+      if (selection) {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
     });
 
     // Enter (including Shift+Enter) ends editing instead of inserting a newline.
