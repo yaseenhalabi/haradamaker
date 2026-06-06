@@ -830,6 +830,11 @@ body.mode-view .sidebar {
   height: 18px;
 }
 
+.cloud-action {
+  position: relative;
+  flex: none;
+}
+
 .cloud__icon-button {
   width: var(--switch-h);
   height: var(--switch-h);
@@ -854,6 +859,24 @@ body.mode-view .sidebar {
 
 .cloud__icon-button.is-error {
   background: #b00020;
+}
+
+.cloud-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 130;
+  transform: translateX(-50%);
+  padding: 6px 9px;
+  border-radius: 7px;
+  background: var(--bw-black);
+  color: var(--bw-white);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
 }
 
 @keyframes toolbar-spin {
@@ -928,7 +951,8 @@ body.mode-view .sidebar {
 
   .cloud__button,
   .cloud__text-button,
-  .cloud__icon-button {
+  .cloud__icon-button,
+  .cloud-action {
     flex: none;
   }
 

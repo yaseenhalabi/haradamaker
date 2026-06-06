@@ -85,14 +85,20 @@ export function createPersistenceControls(
   saveButton.className = "cloud__icon-button";
   saveButton.type = "button";
   saveButton.setAttribute("aria-label", "Save");
+  const saveAction = document.createElement("div");
+  saveAction.className = "cloud-action";
+  saveAction.appendChild(saveButton);
 
   const shareButton = document.createElement("button");
   shareButton.className = "cloud__icon-button";
   shareButton.type = "button";
   shareButton.setAttribute("aria-label", "Share");
   shareButton.appendChild(createElement(Share2));
+  const shareAction = document.createElement("div");
+  shareAction.className = "cloud-action";
+  shareAction.appendChild(shareButton);
 
-  wrap.append(picker, authSlot, saveButton, shareButton);
+  wrap.append(picker, authSlot, saveAction, shareAction);
   mount.appendChild(wrap);
 
   function setSaveState(state: "saved" | "saving" | "error" = "saved") {
@@ -112,6 +118,36 @@ export function createPersistenceControls(
     saveButton.appendChild(icon);
   }
   setSaveState("saved");
+
+  function showTooltip(anchor: HTMLElement, message: string) {
+    const existing = anchor.querySelector(".cloud-tooltip");
+    existing?.remove();
+    const tooltip = document.createElement("div");
+    tooltip.className = "cloud-tooltip";
+    tooltip.textContent = message;
+    anchor.appendChild(tooltip);
+    window.setTimeout(() => {
+      tooltip.remove();
+    }, 2000);
+  }
+
+  async function copyText(text: string): Promise<void> {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const input = document.createElement("textarea");
+    input.value = text;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    document.body.appendChild(input);
+    input.select();
+    const copied = document.execCommand("copy");
+    input.remove();
+    if (!copied) throw new Error("Clipboard copy failed");
+  }
 
   function setSignedInState(signedIn: boolean) {
     loginButton.hidden = signedIn;
@@ -345,6 +381,9 @@ export function createPersistenceControls(
         }
         return saveNow();
       })
+      .then((board) => {
+        if (board) showTooltip(saveAction, "Saved");
+      })
       .catch((error) => {
         console.error(error);
         setSaveState("error");
@@ -371,12 +410,14 @@ export function createPersistenceControls(
         window.alert(LOGIN_REQUIRED_MESSAGE);
         return;
       }
-      const board = await saveNow();
-      if (!board) return;
-      const link = await api.createShare(board.id);
+      const boardId = activeBoardId ?? (await ensureBoard());
+      if (!boardId) return;
+      showTooltip(shareAction, "Copying link");
+      const link = await api.createShare(boardId);
       const fullUrl = shareUrl(link.url);
-      await navigator.clipboard?.writeText(fullUrl);
+      await copyText(fullUrl);
       setSaveState("saved");
+      showTooltip(shareAction, "Link copied");
     } catch (error) {
       console.error(error);
       setSaveState("error");
