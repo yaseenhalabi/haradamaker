@@ -1,14 +1,17 @@
 import type { BoardElements } from "./grid.ts";
 
-// Discrete, snapped zoom: either the whole 9x9 board, or a single 3x3 block
+// Edit-mode snapped zoom: either the whole 9x9 board, or a single 3x3 block
 // scaled to fill the viewport. No free-form zooming — the view always lands
 // on a clean, square-aligned region.
 //
 // Interaction model:
-//   - board view: tapping a block zooms into it. Cells are NOT editable here —
-//     a tap can only navigate, never focus a cell / pop the keyboard.
+//   - Edit mode board view: tapping a block zooms into it. Cells are NOT
+//     editable here — a tap can only navigate, never focus a cell / pop the
+//     keyboard.
 //   - block view: tapping a cell focuses it for typing; Escape or tapping
 //     outside the board snaps back out to the whole board.
+//   - View mode: zoom is locked to the full board so clicking selects cells
+//     directly from the main grid.
 //   - touch: a two-finger pinch drives the same snapped zoom — spreading apart
 //     zooms into the block under the pinch, pinching together zooms back out.
 //     (Native browser pinch-zoom stays disabled via the viewport meta tag and
@@ -87,6 +90,10 @@ export function initZoom({ viewport, board }: BoardElements): void {
     apply();
   }
 
+  function viewing() {
+    return viewport.classList.contains("mode-view");
+  }
+
   board.addEventListener("transitionend", (event) => {
     if (event.propertyName === "transform" && state.level === "block") {
       setEditable(true);
@@ -124,6 +131,10 @@ export function initZoom({ viewport, board }: BoardElements): void {
     // Ignore taps that are part of a multi-touch pinch — that gesture is
     // handled separately below.
     if (pointers.size >= 2) return;
+    if (viewing()) {
+      zoomOut();
+      return;
+    }
 
     if (state.level === "board") {
       // A tap zooms into the block instead of focusing a cell.
@@ -165,6 +176,7 @@ export function initZoom({ viewport, board }: BoardElements): void {
   viewport.addEventListener("pointerdown", (event) => {
     if (event.pointerType !== "touch") return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (viewing()) return;
     if (pointers.size === 2) {
       startDist = spread();
       pinchHandled = false;
@@ -173,6 +185,7 @@ export function initZoom({ viewport, board }: BoardElements): void {
 
   viewport.addEventListener("pointermove", (event) => {
     if (!pointers.has(event.pointerId)) return;
+    if (viewing()) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointers.size !== 2 || pinchHandled || startDist === 0) return;
 
@@ -212,6 +225,14 @@ export function initZoom({ viewport, board }: BoardElements): void {
     if (event.key === "Escape") {
       zoomOut();
     }
+  });
+
+  const modeObserver = new MutationObserver(() => {
+    if (viewing()) zoomOut();
+  });
+  modeObserver.observe(viewport, {
+    attributes: true,
+    attributeFilter: ["class"],
   });
 
   apply();

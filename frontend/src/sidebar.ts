@@ -15,6 +15,21 @@ export function createSidebar(mount: HTMLElement): void {
   aside.className = "sidebar";
   aside.innerHTML = `
     <h1 class="sidebar__title">HaradaMaker.com</h1>
+    <div class="sidebar__meta">
+      <span>
+        Made by
+        <a
+          href="https://www.linkedin.com/in/yaseenhalabi"
+          target="_blank"
+          rel="noreferrer"
+        >Yaseen Halabi</a>
+      </span>
+      <a
+        href="https://github.com/yaseenhalabi/haradamaker"
+        target="_blank"
+        rel="noreferrer"
+      >GitHub</a>
+    </div>
     <p class="sidebar__lead">
       A digital Mandal chart for the Harada Method, a goal-setting framework
       developed by Japanese educator Takashi Harada to turn a big ambition into

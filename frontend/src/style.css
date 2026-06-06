@@ -28,15 +28,16 @@ body {
 
 #app {
   --app-pad: 20px;
-  --switch-h: 44px;
-  --stack-gap: 16px;
+  --switch-h: 40px;
+  --toolbar-h: 40px;
+  --stack-gap: 12px;
   --sidebar-w: 320px; /* width reserved for the Edit-mode sidebar (0 otherwise) */
   /* The board's square side length: the smaller of the width left of the sidebar
      and the height left under the switch. Shared by the viewport and the
      zoom-hint so the hint can sit in the gap below the board. */
   --board-size: min(
     calc(100vw - var(--sidebar-w) - 2 * var(--app-pad)),
-    calc(100vh - 2 * var(--app-pad) - var(--switch-h) - var(--stack-gap))
+    calc(100vh - 2 * var(--app-pad) - var(--toolbar-h) - var(--stack-gap))
   );
   height: 100%;
   width: 100%;
@@ -62,6 +63,19 @@ body.mode-view #app {
   justify-content: center;
   gap: var(--stack-gap);
   padding: var(--app-pad);
+}
+
+.toolbar {
+  position: relative;
+  z-index: 80;
+  flex: none;
+  width: min(var(--board-size), 980px);
+  min-height: var(--toolbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 4px;
 }
 
 /* Viewport that clips the board and captures interaction. Kept square and sized
@@ -107,8 +121,8 @@ body.mode-view #app {
 .mode-switch__option {
   position: relative;
   z-index: 1;
-  min-width: 88px;
-  padding: 0 24px;
+  min-width: 72px;
+  padding: 0 18px;
   border: none;
   background: transparent;
   font: inherit;
@@ -328,6 +342,23 @@ body.mode-view .sidebar {
   font-weight: 700;
 }
 
+.sidebar__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: -6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #444;
+}
+
+.sidebar__meta a {
+  color: var(--bw-black);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .sidebar__lead {
   font-size: 14px;
   line-height: 1.5;
@@ -482,7 +513,7 @@ body.mode-view .sidebar {
     (
         var(--app-pad) +
           (
-              100vh - 2 * var(--app-pad) - var(--switch-h) - var(--stack-gap) -
+              100vh - 2 * var(--app-pad) - var(--toolbar-h) - var(--stack-gap) -
                 var(--board-size)
             ) / 2
       ) / 2
@@ -503,43 +534,47 @@ body.mode-view .sidebar {
   }
 }
 
-/* ─── Export menu (top-right) ────────────────────────────────────────────── */
+/* ─── Center toolbar controls ────────────────────────────────────────────── */
 .export {
-  position: fixed;
-  top: 12px;
-  right: 12px;
-  z-index: 70;
+  position: relative;
+  flex: none;
 }
 
 .export__toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  gap: 8px;
+  height: var(--switch-h);
+  padding: 0 16px;
+  height: var(--switch-h);
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--bw-black);
   color: var(--bw-white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .export__toggle svg {
-  width: 22px;
-  height: 22px;
+  width: 21px;
+  height: 21px;
 }
 
 .export__menu {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 10px);
   right: 0;
+  z-index: 120;
   min-width: 220px;
   display: none;
   flex-direction: column;
   padding: 6px;
   background: var(--bw-white);
   border: var(--line-thin) solid var(--bw-black);
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
 }
 
@@ -571,4 +606,297 @@ body.mode-view .sidebar {
   width: 18px;
   height: 18px;
   flex: none;
+}
+
+.cloud {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cloud [hidden] {
+  display: none !important;
+}
+
+.cloud-picker {
+  position: relative;
+  flex: none;
+  width: 220px;
+}
+
+.cloud-picker__button {
+  width: 220px;
+  height: var(--switch-h);
+  border: 2px solid var(--bw-black);
+  border-radius: 8px;
+  background: var(--bw-white);
+  color: var(--bw-black);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0 12px 0 14px;
+  cursor: pointer;
+}
+
+.cloud-picker__button svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.cloud-picker__label {
+  min-width: 0;
+  padding-bottom: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-picker__menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 120;
+  width: 260px;
+  max-height: min(320px, calc(100vh - 160px));
+  display: none;
+  flex-direction: column;
+  padding: 6px;
+  overflow: auto;
+  background: var(--bw-white);
+  border: 2px solid var(--bw-black);
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+}
+
+.cloud-picker.is-open .cloud-picker__menu {
+  display: flex;
+}
+
+.cloud-picker__item {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--bw-black);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cloud-picker__item svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+
+.cloud-picker__item-label {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-picker__delete {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: #555;
+  cursor: pointer;
+}
+
+.cloud-picker__delete:hover,
+.cloud-picker__delete:focus-visible {
+  background: var(--bw-black);
+  color: var(--bw-white);
+  outline: none;
+}
+
+.cloud-picker__delete svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cloud-picker__item:hover,
+.cloud-picker__item.is-active {
+  background: var(--bw-pillar);
+}
+
+.cloud__button {
+  height: var(--switch-h);
+  padding: 0 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--bw-black);
+  color: var(--bw-white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cloud__auth-slot {
+  width: 92px;
+  height: var(--switch-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.cloud__text-button {
+  height: var(--switch-h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 8px;
+  border: none;
+  background: transparent;
+  color: var(--bw-black);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cloud__text-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cloud__icon-button {
+  width: var(--switch-h);
+  height: var(--switch-h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: var(--bw-black);
+  color: var(--bw-white);
+  cursor: pointer;
+}
+
+.cloud__icon-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.cloud__icon-button.is-saving svg {
+  animation: toolbar-spin 850ms linear infinite;
+}
+
+.cloud__icon-button.is-error {
+  background: #b00020;
+}
+
+@keyframes toolbar-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.share-title {
+  height: var(--switch-h);
+  max-width: var(--board-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bw-black);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-area--shared {
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  #app {
+    --toolbar-h: 96px;
+  }
+
+  .toolbar {
+    width: min(var(--board-size), calc(100vw - 24px));
+    height: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 12px;
+  }
+
+  .mode-switch {
+    order: 0;
+    width: min(58vw, 220px);
+  }
+
+  .cloud {
+    order: 1;
+    flex: 1 1 100%;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .export {
+    order: 0;
+  }
+
+  .export__toggle {
+    height: 44px;
+    padding: 0 14px;
+  }
+
+  .cloud-picker,
+  .cloud-picker__button {
+    width: min(100%, 280px);
+  }
+
+  .cloud-picker__menu {
+    width: 100%;
+  }
+
+  .cloud__button,
+  .cloud__text-button,
+  .cloud__icon-button {
+    flex: none;
+  }
+
+  .cloud__auth-slot {
+    width: 92px;
+    flex: none;
+  }
+
+  .cloud__icon-button {
+    width: 52px;
+    height: 44px;
+  }
+
 }

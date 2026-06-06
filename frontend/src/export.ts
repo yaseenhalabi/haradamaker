@@ -194,6 +194,7 @@ export function createExportMenu(mount: HTMLElement): void {
   toggle.type = "button";
   toggle.setAttribute("aria-label", "Export");
   toggle.appendChild(createElement(Download));
+  toggle.appendChild(document.createTextNode("Export"));
 
   const menu = document.createElement("div");
   menu.className = "export__menu";

@@ -94,6 +94,20 @@ function fitText(el: HTMLElement): void {
   el.style.fontSize = `${best}px`;
 }
 
+export function renderBoardCells(
+  viewport: HTMLElement,
+  cells: Record<string, string>,
+): void {
+  const texts = Array.from(
+    viewport.querySelectorAll<HTMLDivElement>(".cell-text"),
+  );
+  for (const el of texts) {
+    const key = cellKey(Number(el.dataset.block), Number(el.dataset.cell));
+    el.textContent = cells[key] ?? "";
+    fitText(el);
+  }
+}
+
 export function initEditing({ viewport }: BoardElements): void {
   const texts = Array.from(
     viewport.querySelectorAll<HTMLDivElement>(".cell-text"),

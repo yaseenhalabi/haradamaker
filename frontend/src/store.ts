@@ -8,6 +8,7 @@ export interface BoardState {
   done: Record<string, boolean>;
   setCell: (key: string, value: string) => void;
   toggleDone: (key: string) => void;
+  replaceBoard: (cells: Record<string, string>, done: Record<string, boolean>) => void;
 }
 
 export const boardStore = createStore<BoardState>()(
@@ -19,9 +20,17 @@ export const boardStore = createStore<BoardState>()(
         set((state) => ({ cells: { ...state.cells, [key]: value } })),
       toggleDone: (key) =>
         set((state) => ({ done: { ...state.done, [key]: !state.done[key] } })),
+      replaceBoard: (cells, done) => set({ cells, done }),
     }),
     { name: "haradamaker-board" },
   ),
 );
 
 export const cellKey = (block: number, cell: number) => `${block}-${cell}`;
+
+export type BoardSnapshot = Pick<BoardState, "cells" | "done">;
+
+export function boardSnapshot(): BoardSnapshot {
+  const { cells, done } = boardStore.getState();
+  return { cells, done };
+}
