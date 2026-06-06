@@ -52,11 +52,6 @@ export function createSidebar(mount: HTMLElement): void {
       ></textarea>
       <button class="sidebar-ai__button" type="button">Generate with AI</button>
     </div>
-    <p class="sidebar__lead">
-      Baseball star Shohei Ohtani famously made one of these charts in high
-      school, with &ldquo;become the no.&nbsp;1 draft pick&rdquo; at its center,
-      surrounded by themes like body, control, and mentality.
-    </p>
     <h2 class="sidebar__heading">How to use</h2>
     <ul class="sidebar__list">
       <li>Tap a 3&times;3 block to zoom in, then tap a cell to start typing.</li>
