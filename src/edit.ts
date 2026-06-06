@@ -2,6 +2,7 @@ import type { BoardElements } from "./grid.ts";
 import { boardStore, cellKey } from "./store.ts";
 
 const MIN_FONT = 6; // px
+const MAX_FONT = 28; // px — keep short text at a sensible medium size
 
 // A single offscreen element used to measure text at a given font size and
 // width. Measuring on this probe (instead of the live, visible cell) means the
@@ -48,9 +49,9 @@ function fitText(el: HTMLElement): void {
   probe.textContent = text;
 
   // A single line is roughly line-height * fontSize tall, so the content height
-  // is a safe upper bound for the font size.
+  // is a natural upper bound — but cap it so short text doesn't render huge.
   let lo = MIN_FONT;
-  let hi = Math.ceil(contentH) + 1;
+  let hi = Math.min(Math.ceil(contentH) + 1, MAX_FONT);
   let best = MIN_FONT;
 
   for (let i = 0; i < 20 && hi - lo > 0.3; i++) {
