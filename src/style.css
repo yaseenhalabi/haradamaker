@@ -27,20 +27,99 @@ body {
 }
 
 #app {
+  --app-pad: 20px;
+  --switch-h: 44px;
+  --stack-gap: 16px;
+  --sidebar-w: 320px; /* width reserved for the Edit-mode sidebar (0 otherwise) */
+  /* The board's square side length: the smaller of the width left of the sidebar
+     and the height left under the switch. Shared by the viewport and the
+     zoom-hint so the hint can sit in the gap below the board. */
+  --board-size: min(
+    calc(100vw - var(--sidebar-w) - 2 * var(--app-pad)),
+    calc(100vh - 2 * var(--app-pad) - var(--switch-h) - var(--stack-gap))
+  );
   height: 100%;
   width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: row;
 }
 
-/* Viewport that clips the board and captures interaction */
+/* View mode (and mobile) reclaim the sidebar's width so the board centres. */
+body.mode-view #app {
+  --sidebar-w: 0px;
+}
+
+/* The board's column: holds the mode switch + viewport, centred in the space
+   left of the sidebar (so in Edit mode the board sits right of screen centre). */
+.board-area {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--stack-gap);
+  padding: var(--app-pad);
+}
+
+/* Viewport that clips the board and captures interaction. Kept square and sized
+   to fit the space left after the sidebar, the page padding, the switch, and the
+   gap. */
 .board-viewport {
   position: relative;
-  width: min(100vw, 100vh);
-  height: min(100vw, 100vh);
+  width: var(--board-size);
+  height: var(--board-size);
   overflow: hidden;
   touch-action: none;
+}
+
+/* Sliding Edit/View switch above the board. */
+.mode-switch {
+  position: relative;
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: var(--switch-h);
+  padding: 4px;
+  background: var(--bw-pillar);
+  border-radius: 999px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mode-switch__thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background: var(--bw-black);
+  border-radius: 999px;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mode-switch.is-view .mode-switch__thumb {
+  transform: translateX(100%);
+}
+
+.mode-switch__option {
+  position: relative;
+  z-index: 1;
+  min-width: 88px;
+  padding: 0 24px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  color: var(--bw-black);
+  cursor: pointer;
+  transition: color 220ms ease;
+}
+
+.mode-switch__option.is-active {
+  color: var(--bw-white);
 }
 
 /* The square board (3x3 of blocks), transformed for snapped zoom.
@@ -112,6 +191,30 @@ body {
   font-weight: 700;
 }
 
+/* "Done" overlay: a solid black layer with a centered check mark, covering a
+   completed cell. Only shown in View mode (toggled by tapping the cell). */
+.cell-done {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55); /* transparent black tint over the cell */
+  pointer-events: none; /* taps fall through to the cell so it can be un-done */
+}
+
+.board-viewport.mode-view .cell.is-done .cell-done {
+  display: flex;
+}
+
+.cell-done__icon {
+  width: 50cqmin;
+  height: 50cqmin;
+  color: var(--bw-white);
+  stroke-width: 2.5;
+}
+
 /* Editable, centered text. Native text box: a fixed, cell-relative font size
    (a fraction of the cell via container units), centered, wrapping like a normal
    input. Long text scrolls within the cell instead of resizing the font. */
@@ -162,8 +265,15 @@ body {
    by the synthetic tap after pointerup, which preventDefault() on pointerdown
    can't suppress — so we disable pointer events on the text entirely until the
    board is zoomed into a single block. */
-.board-viewport:not(.zoomed) .cell-text {
+.board-viewport:not(.zoomed) .cell-text,
+.board-viewport.mode-view .cell-text {
   pointer-events: none;
+}
+
+/* View mode is read-only: text can't be selected. */
+.board-viewport.mode-view .cell-text {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* On small/mobile screens, shrink the cell text so long words fit better.
@@ -190,4 +300,275 @@ body {
 .cell-text:empty::before {
   content: "\200B";
   display: block;
+}
+
+/* ─── Sidebar (Edit-mode guide) ──────────────────────────────────────────────
+   Desktop: a fixed-width column on the left, in the flex flow. View mode hides
+   it (and #app zeroes --sidebar-w so the board recentres). Mobile: collapses to
+   an off-canvas overlay opened by the top-left button. */
+.sidebar {
+  flex: none;
+  width: var(--sidebar-w);
+  height: 100%;
+  padding: 28px 24px;
+  border-right: var(--line-thin) solid var(--bw-black);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--bw-white);
+}
+
+body.mode-view .sidebar {
+  display: none;
+}
+
+.sidebar__title {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.sidebar__lead {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.sidebar__heading {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+.sidebar__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.sidebar__list li {
+  padding-left: 16px;
+  position: relative;
+}
+
+.sidebar__list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--bw-black);
+}
+
+.sidebar kbd {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border: 1px solid var(--bw-black);
+  border-radius: 5px;
+  background: var(--bw-pillar);
+}
+
+/* Top-left button that opens the sidebar overlay — mobile + Edit mode only. */
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 60;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 12px;
+  background: var(--bw-black);
+  color: var(--bw-white);
+  cursor: pointer;
+}
+
+.sidebar-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Backdrop behind the mobile overlay. */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* Close button inside the sidebar — mobile overlay only. */
+.sidebar__close {
+  display: none;
+  align-self: flex-end;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: var(--bw-pillar);
+  color: var(--bw-black);
+  cursor: pointer;
+}
+
+.sidebar__close svg {
+  width: 22px;
+  height: 22px;
+}
+
+@media (max-width: 600px) {
+  /* The sidebar no longer reserves layout width; it floats over the board. */
+  #app {
+    --sidebar-w: 0px;
+  }
+
+  /* Off-canvas overlay, slid in when <body> has `sidebar-open`. */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    width: min(320px, 85vw);
+    transform: translateX(-100%);
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Shadow only while open, so it doesn't bleed past the left edge when hidden. */
+  body.sidebar-open .sidebar {
+    transform: translateX(0);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Show the open button only in Edit mode. */
+  body:not(.mode-view) .sidebar-toggle {
+    display: flex;
+  }
+
+  body.sidebar-open .sidebar-backdrop {
+    display: block;
+  }
+
+  .sidebar__close {
+    display: flex;
+  }
+}
+
+/* Mobile-only hint shown below the board while zoomed into a block. It's
+   absolutely positioned so it never shifts the board or controls. It's always
+   present and just fades in/out. Tapping it (outside the viewport) zooms out. */
+.zoom-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Vertically centred in the gap between the board's bottom and the screen
+     bottom. That gap measures `--app-pad + free/2` (bottom padding + half the
+     leftover after centring the switch+gap+board stack); halve it for the
+     midpoint, then translateY(50%) centres the text line on it. */
+  bottom: calc(
+    (
+        var(--app-pad) +
+          (
+              100vh - 2 * var(--app-pad) - var(--switch-h) - var(--stack-gap) -
+                var(--board-size)
+            ) / 2
+      ) / 2
+  );
+  transform: translateY(50%);
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 240ms ease;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .board-viewport.zoomed ~ .zoom-hint {
+    opacity: 1;
+  }
+}
+
+/* ─── Export menu (top-right) ────────────────────────────────────────────── */
+.export {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 70;
+}
+
+.export__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: var(--bw-black);
+  color: var(--bw-white);
+  cursor: pointer;
+}
+
+.export__toggle svg {
+  width: 22px;
+  height: 22px;
+}
+
+.export__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  display: none;
+  flex-direction: column;
+  padding: 6px;
+  background: var(--bw-white);
+  border: var(--line-thin) solid var(--bw-black);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+}
+
+.export.is-open .export__menu {
+  display: flex;
+}
+
+.export__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bw-black);
+  text-align: left;
+  cursor: pointer;
+}
+
+.export__item:hover {
+  background: var(--bw-pillar);
+}
+
+.export__item svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
 }

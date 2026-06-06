@@ -13,6 +13,7 @@
     "vite": "^6.0.0"
   },
   "dependencies": {
+    "lucide": "^1.17.0",
     "zustand": "^5.0.14"
   }
 }

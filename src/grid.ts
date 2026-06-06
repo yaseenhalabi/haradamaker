@@ -2,6 +2,8 @@
 // Block index 0..8 follows row-major order (0 = top-left, 4 = center, 8 = bottom-right).
 // Cell index within a block is also 0..8 row-major.
 
+import { createElement, Check } from "lucide";
+
 export interface BoardElements {
   viewport: HTMLDivElement;
   board: HTMLDivElement;
@@ -49,6 +51,15 @@ export function buildBoard(mount: HTMLElement): BoardElements {
       text.setAttribute("contenteditable", "plaintext-only");
       text.spellcheck = false;
       cell.appendChild(text);
+
+      // "Done" overlay: a dark opaque layer with a check mark, shown when the
+      // cell is marked complete in View mode (see done.ts / CSS).
+      const doneOverlay = document.createElement("div");
+      doneOverlay.className = "cell-done";
+      const check = createElement(Check);
+      check.classList.add("cell-done__icon");
+      doneOverlay.appendChild(check);
+      cell.appendChild(doneOverlay);
 
       block.appendChild(cell);
     }

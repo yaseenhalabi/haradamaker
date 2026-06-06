@@ -31,6 +31,12 @@ export function initZoom({ viewport, board }: BoardElements): void {
   let state: ZoomState = { level: "board" };
   let editable = false;
   let editTimer = 0;
+  // The tap that triggers a zoom-in is followed by trailing (synthetic on touch)
+  // mouse/focus/click events ~300ms later. By then the zoom has settled and the
+  // board is interactive, so that focus/click would also focus a cell (edit
+  // mode) or toggle its "done" state (view mode). Until this timestamp, swallow
+  // those trailing interactions so the zoom-in tap only ever navigates.
+  let suppressUntil = 0;
 
   // `zoomed` on the viewport both drives the CSS (cells become interactive) and
   // tracks whether editing is currently allowed.
@@ -76,6 +82,8 @@ export function initZoom({ viewport, board }: BoardElements): void {
     clearTimeout(editTimer);
     setEditable(false);
     (document.activeElement as HTMLElement | null)?.blur?.();
+    // Clear any lingering text selection from editing the cell we're leaving.
+    window.getSelection()?.removeAllRanges();
     apply();
   }
 
@@ -90,7 +98,24 @@ export function initZoom({ viewport, board }: BoardElements): void {
   viewport.addEventListener(
     "focusin",
     (event) => {
-      if (!editable) (event.target as HTMLElement | null)?.blur?.();
+      const suppressed = suppressUntil !== 0 && event.timeStamp < suppressUntil;
+      if (!editable || suppressed) {
+        (event.target as HTMLElement | null)?.blur?.();
+      }
+    },
+    true,
+  );
+
+  // Swallow the trailing click from a zoom-in tap (view mode "done" toggle).
+  // Capture phase + stopImmediatePropagation runs before (and blocks) the
+  // bubble-phase handler in done.ts on the same element.
+  board.addEventListener(
+    "click",
+    (event) => {
+      if (suppressUntil !== 0 && event.timeStamp < suppressUntil) {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+      }
     },
     true,
   );
@@ -107,6 +132,7 @@ export function initZoom({ viewport, board }: BoardElements): void {
       );
       if (block) {
         event.preventDefault();
+        suppressUntil = event.timeStamp + 400;
         zoomIn(Number(block.dataset.block));
       }
       return;
