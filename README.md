@@ -1,4 +1,5 @@
 # HaradaMaker
+⚠️ WARNING: This is AI slop. Yes it interacts with the DOM directly. Yes the supabase may be vulnerable (hey i told it to be secure). Enjoy!
 
 HaradaMaker is split into:
 
