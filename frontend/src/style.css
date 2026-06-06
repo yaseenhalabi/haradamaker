@@ -3,6 +3,12 @@
   --bw-white: #ffffff;
   --bw-pillar: #d9d9d9; /* light gray tint for the 8 pillars */
   --bw-goal: #1f1f1f; /* dark fill for the central goal */
+  --grid-line: var(--bw-black);
+  --grid-cell: var(--bw-white);
+  --grid-pillar: var(--bw-pillar);
+  --grid-goal: var(--bw-goal);
+  --grid-text: var(--bw-black);
+  --grid-goal-text: var(--bw-white);
   /* Line widths are in the board's DOM px space, which is laid out at 3x the
      viewport (see .board). At overview scale(1/3) these render as 1px/3px. */
   --line-thin: 3px;
@@ -152,7 +158,7 @@ body.mode-view #app {
   grid-template-rows: repeat(3, minmax(0, 1fr));
   gap: var(--line-thick);
   padding: var(--line-thick);
-  background: var(--bw-black);
+  background: var(--grid-line);
   transform-origin: top left;
   transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
   /* No `will-change: transform` on purpose: it pins a cached 1x raster of the
@@ -167,7 +173,7 @@ body.mode-view #app {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(3, minmax(0, 1fr));
   gap: var(--line-thin);
-  background: var(--bw-black);
+  background: var(--grid-line);
   min-width: 0;
   min-height: 0;
 }
@@ -175,7 +181,7 @@ body.mode-view #app {
 /* Each cell is a pure square. It's a size container so the text font can be a
    fixed fraction of the cell (scales with the board, not with each keystroke). */
 .cell {
-  background: var(--bw-white);
+  background: var(--grid-cell);
   position: relative;
   overflow: hidden;
   min-width: 0;
@@ -186,17 +192,17 @@ body.mode-view #app {
 /* The 8 pillars: tinted gray. Both the cells around the goal and the mirrored
    center cell of each outer block. */
 .cell.pillar {
-  background: var(--bw-pillar);
+  background: var(--grid-pillar);
 }
 
 /* The central goal: dark fill, light text. */
 .cell.goal {
-  background: var(--bw-goal);
+  background: var(--grid-goal);
 }
 
 .cell.goal .cell-text {
-  color: var(--bw-white);
-  caret-color: var(--bw-white);
+  color: var(--grid-goal-text);
+  caret-color: var(--grid-goal-text);
 }
 
 /* Pillars and goal read as headings — heavier weight than action cells. */
@@ -225,7 +231,7 @@ body.mode-view #app {
 .cell-done__icon {
   width: 50cqmin;
   height: 50cqmin;
-  color: var(--bw-white);
+  color: var(--grid-goal-text);
   stroke-width: 2.5;
 }
 
@@ -245,8 +251,8 @@ body.mode-view #app {
   font-size: clamp(21px, 15cqmin, 84px);
   line-height: 1.2;
   font-weight: 500;
-  color: var(--bw-black);
-  caret-color: var(--bw-black);
+  color: var(--grid-text);
+  caret-color: var(--grid-text);
   /* Never break a word mid-character — the font shrinks (via fitText) until
      each whole word fits instead. */
   word-break: normal;
@@ -578,6 +584,126 @@ body.mode-view .sidebar {
 }
 
 /* ─── Center toolbar controls ────────────────────────────────────────────── */
+.color-picker {
+  position: relative;
+  flex: none;
+}
+
+.color-picker__toggle {
+  height: var(--switch-h);
+  width: 92px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: var(--bw-black);
+  color: var(--bw-white);
+  font: inherit;
+  cursor: pointer;
+}
+
+.color-picker__toggle svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.color-picker__preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.color-picker__preview-swatch {
+  width: 10px;
+  height: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.color-picker__menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  z-index: 120;
+  width: 240px;
+  display: none;
+  grid-auto-rows: minmax(40px, auto);
+  gap: 2px;
+  padding: 6px;
+  transform: translateX(-50%);
+  background: var(--bw-white);
+  border: 2px solid var(--bw-black);
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+}
+
+.color-picker.is-open .color-picker__menu {
+  display: grid;
+}
+
+.color-picker__item {
+  width: 100%;
+  min-height: 40px;
+  display: grid;
+  grid-template-columns: auto 1fr 18px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  color: var(--bw-black);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.color-picker__item:hover,
+.color-picker__item.is-active {
+  background: var(--bw-pillar);
+}
+
+.color-picker__swatches {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--bw-black);
+  border-radius: 999px;
+  background: var(--bw-white);
+}
+
+.color-picker__swatch {
+  width: 13px;
+  height: 13px;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  border-radius: 50%;
+}
+
+.color-picker__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.color-picker__check {
+  width: 17px;
+  height: 17px;
+  opacity: 0;
+}
+
+.color-picker__item.is-active .color-picker__check {
+  opacity: 1;
+}
+
 .export {
   position: relative;
   flex: none;
@@ -933,6 +1059,19 @@ body.mode-view .sidebar {
 
   .export {
     order: 0;
+  }
+
+  .color-picker {
+    order: 0;
+  }
+
+  .color-picker__toggle {
+    height: 44px;
+    width: 92px;
+  }
+
+  .color-picker__menu {
+    width: min(230px, calc(100vw - 24px));
   }
 
   .export__toggle {

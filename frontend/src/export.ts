@@ -6,21 +6,13 @@ import {
   FileJson,
   Printer,
 } from "lucide";
+import { getCurrentColorScheme } from "./colorScheme.ts";
 import { boardStore, cellKey } from "./store.ts";
 
 // Export the board independently of the live DOM (which is laid out at 3x and
 // transformed for zoom — awkward to rasterise). We redraw the 9x9 chart onto a
 // fresh canvas straight from the store, so the output is always crisp and shows
 // the whole board regardless of the current zoom/mode.
-
-const COLORS = {
-  line: "#000000",
-  white: "#ffffff",
-  pillar: "#d9d9d9",
-  goal: "#1f1f1f",
-  text: "#000000",
-  goalText: "#ffffff",
-};
 
 // Geometry (px). Black background shows through the gaps as grid lines.
 const CELL = 190;
@@ -105,11 +97,12 @@ export function boardToCanvas(scale = 2): HTMLCanvasElement {
   canvas.height = SIZE * scale;
   const ctx = canvas.getContext("2d")!;
   ctx.scale(scale, scale);
+  const colors = getCurrentColorScheme();
 
   // White margin, then the black board square whose gaps form the grid lines.
-  ctx.fillStyle = COLORS.white;
+  ctx.fillStyle = colors.cell;
   ctx.fillRect(0, 0, SIZE, SIZE);
-  ctx.fillStyle = COLORS.line;
+  ctx.fillStyle = colors.line;
   ctx.fillRect(PAD, PAD, BOARD, BOARD);
 
   const { cells } = boardStore.getState();
@@ -123,10 +116,10 @@ export function boardToCanvas(scale = 2): HTMLCanvasElement {
 
       const { x, y } = cellRect(b, c);
       ctx.fillStyle = goal
-        ? COLORS.goal
+        ? colors.goal
         : pillar
-          ? COLORS.pillar
-          : COLORS.white;
+          ? colors.pillar
+          : colors.cell;
       ctx.fillRect(x, y, CELL, CELL);
 
       const value = cells[cellKey(b, c)] ?? "";
@@ -136,7 +129,7 @@ export function boardToCanvas(scale = 2): HTMLCanvasElement {
         x,
         y,
         pillar || goal,
-        goal ? COLORS.goalText : COLORS.text,
+        goal ? colors.goalText : colors.text,
       );
     }
   }

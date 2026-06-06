@@ -8,6 +8,7 @@ import { createSidebar } from "./sidebar.ts";
 import { createExportMenu } from "./export.ts";
 import { createPersistenceControls } from "./persistence.ts";
 import { initSharedBoard } from "./share.ts";
+import { createColorSchemePicker } from "./colorScheme.ts";
 
 const mount = document.getElementById("app");
 if (!mount) {
@@ -38,6 +39,7 @@ initZoom(elements);
 
 const modeSwitch = createModeSwitch(elements.viewport);
 toolbar.appendChild(modeSwitch);
+createColorSchemePicker(toolbar);
 createPersistenceControls(toolbar, elements);
 createExportMenu(toolbar);
 
