@@ -1,4 +1,6 @@
 import { createElement, Menu, X } from "lucide";
+import { api } from "./api.ts";
+import { supabase } from "./supabase.ts";
 
 // Left sidebar with a short "what is this / how to use" guide.
 //   - Edit mode: shown as a fixed-width column to the left of the board (the
@@ -28,7 +30,7 @@ export function createSidebar(mount: HTMLElement): void {
         href="https://github.com/yaseenhalabi/haradamaker"
         target="_blank"
         rel="noreferrer"
-      >GitHub</a>
+      >Source code</a>
     </div>
     <p class="sidebar__lead">
       A digital Mandal chart for the Harada Method, a goal-setting framework
@@ -43,6 +45,14 @@ export function createSidebar(mount: HTMLElement): void {
       that develop it. That makes 81 boxes in all, building from one goal to 64
       concrete habits you can practise.
     </p>
+    <div class="sidebar-ai">
+      <textarea
+        class="sidebar-ai__input"
+        placeholder="Describe a goal of yours in detail, e.g: go pro in soccer"
+        rows="3"
+      ></textarea>
+      <button class="sidebar-ai__button" type="button">Generate with AI</button>
+    </div>
     <p class="sidebar__lead">
       Baseball star Shohei Ohtani famously made one of these charts in high
       school, with &ldquo;become the no.&nbsp;1 draft pick&rdquo; at its centre,
@@ -89,6 +99,48 @@ export function createSidebar(mount: HTMLElement): void {
   toggle.addEventListener("click", open);
   close.addEventListener("click", dismiss);
   backdrop.addEventListener("click", dismiss);
+
+  const aiInput = aside.querySelector<HTMLTextAreaElement>(".sidebar-ai__input");
+  const aiButton = aside.querySelector<HTMLButtonElement>(".sidebar-ai__button");
+
+  const resizeAiInput = () => {
+    if (!aiInput) return;
+    aiInput.style.height = "auto";
+    aiInput.style.height = `${aiInput.scrollHeight}px`;
+  };
+  aiInput?.addEventListener("input", resizeAiInput);
+  resizeAiInput();
+  aiButton?.addEventListener("click", async () => {
+    const goal = aiInput?.value.trim() ?? "";
+    if (!goal) {
+      aiInput?.focus();
+      return;
+    }
+
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      window.alert("You have to sign in first.");
+      return;
+    }
+
+    const original = aiButton.textContent ?? "Generate with AI";
+    aiButton.disabled = true;
+    aiButton.textContent = "Generating...";
+    try {
+      const board = await api.generateBoard(goal);
+      window.dispatchEvent(
+        new CustomEvent("haradamaker:board-generated", { detail: board }),
+      );
+      aiInput!.value = "";
+      dismiss();
+    } catch (error) {
+      console.error(error);
+      window.alert("Could not generate a Harada chart. Please try again.");
+    } finally {
+      aiButton.disabled = false;
+      aiButton.textContent = original;
+    }
+  });
 
   mount.appendChild(aside);
   mount.appendChild(toggle);

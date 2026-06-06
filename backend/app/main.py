@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import secrets
 from datetime import datetime, timezone
 from uuid import UUID
@@ -10,7 +11,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .auth import AuthenticatedUser, current_user
 from .config import get_settings
-from .models import Board, BoardPatch, BoardPayload, ShareLink, UserProfile
+from .models import (
+    Board,
+    BoardPatch,
+    BoardPayload,
+    GenerateBoardPayload,
+    ShareLink,
+    UserProfile,
+)
 
 app = FastAPI(title="HaradaMaker API")
 settings = get_settings()
@@ -32,6 +40,104 @@ def _title_for(payload: BoardPayload) -> str:
 
 def _board_from_json(data: dict) -> Board:
     return Board.model_validate(data)
+
+
+def _clean_text(value: object, fallback: str, limit: int = 80) -> str:
+    if not isinstance(value, str):
+        return fallback
+    cleaned = " ".join(value.split()).strip()
+    return cleaned[:limit] or fallback
+
+
+def _chart_cells_from_ai(data: dict, requested_goal: str) -> tuple[str, dict[str, str]]:
+    goal = _clean_text(data.get("goal"), requested_goal, 120)
+    cells: dict[str, str] = {"4-4": goal}
+    pillars = data.get("pillars")
+    if not isinstance(pillars, list):
+        pillars = []
+
+    outer_blocks = [0, 1, 2, 3, 5, 6, 7, 8]
+    action_cells = [0, 1, 2, 3, 5, 6, 7, 8]
+    for index, block in enumerate(outer_blocks):
+        pillar = pillars[index] if index < len(pillars) and isinstance(pillars[index], dict) else {}
+        name = _clean_text(pillar.get("name"), f"Theme {index + 1}", 42)
+        cells[f"4-{block}"] = name
+        cells[f"{block}-4"] = name
+
+        actions = pillar.get("actions")
+        if not isinstance(actions, list):
+            actions = []
+        for action_index, cell in enumerate(action_cells):
+            fallback = f"Action {action_index + 1}"
+            action = actions[action_index] if action_index < len(actions) else fallback
+            cells[f"{block}-{cell}"] = _clean_text(action, fallback, 64)
+
+    return goal, cells
+
+
+async def _generate_chart(goal: str) -> tuple[str, dict[str, str]]:
+    if not settings.gemini_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI generation is not configured",
+        )
+
+    prompt = f"""
+Create a Harada Method Mandal chart for this user goal:
+{goal}
+
+Return only JSON with this exact shape:
+{{
+  "goal": "short central goal",
+  "pillars": [
+    {{"name": "theme name", "actions": ["specific action", "specific action", "specific action", "specific action", "specific action", "specific action", "specific action", "specific action"]}}
+  ]
+}}
+
+Requirements:
+- Exactly 8 pillars.
+- Exactly 8 actions per pillar.
+- Keep every item concise enough to fit in a small grid cell.
+- Make actions concrete, practical, and measurable when possible.
+"""
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{settings.gemini_model}:generateContent"
+    )
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"response_mime_type": "application/json"},
+    }
+    async with httpx.AsyncClient(timeout=45) as client:
+        response = await client.post(
+            url,
+            params={"key": settings.gemini_api_key},
+            json=payload,
+        )
+    if response.status_code >= 400:
+        detail = "AI generation failed"
+        try:
+            error = response.json().get("error", {})
+            detail = error.get("message") or detail
+        except ValueError:
+            pass
+        if response.status_code == 429:
+            raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=detail)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=detail,
+        )
+
+    try:
+        text = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        data = json.loads(text)
+    except (KeyError, IndexError, TypeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI returned an invalid chart",
+        ) from exc
+
+    return _chart_cells_from_ai(data, goal)
 
 
 def _headers(access_token: str | None = None, prefer: str | None = None) -> dict[str, str]:
@@ -116,6 +222,28 @@ async def create_board(
             "title": _title_for(payload),
             "cells": payload.cells,
             "done": payload.done,
+        },
+        params={"select": "id,owner_id,title,cells,done,created_at,updated_at"},
+        prefer="return=representation",
+    )
+    return _board_from_json(response.json()[0])
+
+
+@app.post("/api/boards/generate", response_model=Board, status_code=status.HTTP_201_CREATED)
+async def generate_board(
+    payload: GenerateBoardPayload,
+    user: AuthenticatedUser = Depends(current_user),
+) -> Board:
+    title, cells = await _generate_chart(payload.goal)
+    response = await _request(
+        "POST",
+        "/boards",
+        access_token=user.access_token,
+        json={
+            "owner_id": str(user.id),
+            "title": title,
+            "cells": cells,
+            "done": {},
         },
         params={"select": "id,owner_id,title,cells,done,created_at,updated_at"},
         prefer="return=representation",

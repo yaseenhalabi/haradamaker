@@ -365,6 +365,49 @@ body.mode-view .sidebar {
   color: #333;
 }
 
+.sidebar-ai {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-ai__input {
+  width: 100%;
+  min-height: 88px;
+  max-height: 220px;
+  padding: 10px 12px;
+  border: 2px solid var(--bw-black);
+  border-radius: 8px;
+  background: var(--bw-white);
+  color: var(--bw-black);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  resize: none;
+  overflow-y: auto;
+}
+
+.sidebar-ai__input::placeholder {
+  color: #666;
+}
+
+.sidebar-ai__button {
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: var(--bw-black);
+  color: var(--bw-white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sidebar-ai__button:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
 .sidebar__heading {
   font-size: 13px;
   font-weight: 700;

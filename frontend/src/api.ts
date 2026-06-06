@@ -64,6 +64,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+  generateBoard: (goal: string) =>
+    request<ApiBoard>("/api/boards/generate", {
+      method: "POST",
+      body: JSON.stringify({ goal }),
+    }),
   updateBoard: (
     id: string,
     payload: {

@@ -33,6 +33,8 @@ usage.
 SUPABASE_URL=https://hkjirstlfhcdrkemxywv.supabase.co
 SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 FRONTEND_ORIGIN=http://localhost:5173
+GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ## Supabase

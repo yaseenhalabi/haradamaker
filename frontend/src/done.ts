@@ -1,7 +1,7 @@
 import type { BoardElements } from "./grid.ts";
 import { boardStore, cellKey } from "./store.ts";
 
-// "Done" marking: while in View mode, tapping a cell from the full-board grid
+// "Done" marking: while in View mode and zoomed into a block, tapping a cell
 // toggles a completed state — a transparent black overlay with a check mark.
 // State is persisted via the board store, so it survives reloads and mode
 // switches.
@@ -83,10 +83,12 @@ export function initDone({ viewport, board }: BoardElements): void {
   boardStore.subscribe(render);
   render();
 
-  // Toggle on tap, but only in View mode. View mode locks zoom to the full grid,
-  // so selection happens directly from the overview.
+  // Toggle on tap, but only in View mode and only when zoomed into a block
+  // (so it can't fire from the overview tap that performs the zoom-in). `click`
+  // naturally ignores pinch/drag gestures.
   board.addEventListener("click", (event) => {
     if (!viewport.classList.contains("mode-view")) return;
+    if (!viewport.classList.contains("zoomed")) return;
     const cell = (event.target as HTMLElement).closest<HTMLElement>(".cell");
     if (!cell) return;
     const b = Number(cell.dataset.block);

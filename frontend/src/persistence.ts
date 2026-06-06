@@ -399,6 +399,15 @@ export function createPersistenceControls(
 
   boardStore.subscribe(queueAutosave);
 
+  window.addEventListener("haradamaker:board-generated", (event) => {
+    const board = (event as CustomEvent<ApiBoard>).detail;
+    applyBoard(board);
+    refreshBoardList().catch((error) => {
+      console.error(error);
+      setSaveState("error");
+    });
+  });
+
   supabase.auth.onAuthStateChange((_event, session) => {
     if (!session) {
       activeBoardId = null;

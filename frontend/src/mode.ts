@@ -5,6 +5,11 @@
 // No routing; this just flips a mode class and the cells' editability.
 
 export type Mode = "edit" | "view";
+const MODE_KEY = "haradamaker-mode";
+
+function savedMode(): Mode {
+  return localStorage.getItem(MODE_KEY) === "view" ? "view" : "edit";
+}
 
 // Builds the switch element and returns it so the caller can place it in the
 // layout. Wires it up to toggle editing on the given viewport's cells.
@@ -26,6 +31,7 @@ export function createModeSwitch(viewport: HTMLElement): HTMLElement {
   );
 
   function setMode(mode: Mode) {
+    localStorage.setItem(MODE_KEY, mode);
     const editing = mode === "edit";
     sw.classList.toggle("is-view", !editing);
     viewport.classList.toggle("mode-view", !editing);
@@ -49,6 +55,6 @@ export function createModeSwitch(viewport: HTMLElement): HTMLElement {
     opt.addEventListener("click", () => setMode(opt.dataset.mode as Mode));
   }
 
-  setMode("edit");
+  setMode(savedMode());
   return sw;
 }

@@ -51,6 +51,10 @@ class BoardPatch(BaseModel):
         return value
 
 
+class GenerateBoardPayload(BaseModel):
+    goal: str = Field(min_length=12, max_length=1200)
+
+
 class Board(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
