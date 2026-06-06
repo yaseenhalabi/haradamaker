@@ -1,6 +1,8 @@
 :root {
   --bw-black: #000000;
   --bw-white: #ffffff;
+  --bw-pillar: #d9d9d9; /* light gray tint for the 8 pillars */
+  --bw-goal: #1f1f1f; /* dark fill for the central goal */
   --line-thin: 1px;
   --line-thick: 3px;
 }
@@ -68,17 +70,42 @@ body {
   min-height: 0;
 }
 
-/* Each cell is a pure square */
+/* Each cell is a pure square. It's a size container so the text font can be a
+   fixed fraction of the cell (scales with the board, not with each keystroke). */
 .cell {
   background: var(--bw-white);
   position: relative;
   overflow: hidden;
   min-width: 0;
   min-height: 0;
+  container-type: size;
 }
 
-/* Editable, auto-fitting, centered text. Fills the cell and clips overflow so
-   text can never push the square out of shape; the JS sizes the font to fit. */
+/* The 8 pillars: tinted gray. Both the cells around the goal and the mirrored
+   center cell of each outer block. */
+.cell.pillar {
+  background: var(--bw-pillar);
+}
+
+/* The central goal: dark fill, light text. */
+.cell.goal {
+  background: var(--bw-goal);
+}
+
+.cell.goal .cell-text {
+  color: var(--bw-white);
+  caret-color: var(--bw-white);
+}
+
+/* Pillars and goal read as headings — heavier weight than action cells. */
+.cell.pillar .cell-text,
+.cell.goal .cell-text {
+  font-weight: 700;
+}
+
+/* Editable, centered text. Native text box: a fixed, cell-relative font size
+   (a fraction of the cell via container units), centered, wrapping like a normal
+   input. Long text scrolls within the cell instead of resizing the font. */
 .cell-text {
   position: absolute;
   inset: 0;
@@ -87,16 +114,55 @@ body {
   justify-content: center;
   padding: 8%;
   text-align: center;
-  line-height: 1.1;
+  font-size: clamp(7px, 15cqmin, 28px);
+  line-height: 1.2;
   font-weight: 500;
   color: var(--bw-black);
   caret-color: var(--bw-black);
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  /* Never break a word mid-character — the font shrinks (via fitText) until
+     each whole word fits instead. */
+  word-break: normal;
+  overflow-wrap: normal;
   white-space: pre-wrap;
-  overflow: hidden;
+  overflow: auto;
+  scrollbar-width: none;
   outline: none;
   cursor: text;
   -webkit-user-select: text;
   user-select: text;
+}
+
+/* While editing: behave like a normal text box — top-left aligned, left text,
+   and a smaller, comfortable typing size (no resize while you type). On blur the
+   JS snaps the font to fit and the centered layout above takes over again. */
+.cell-text:focus {
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  font-size: clamp(6px, 9cqmin, 16px);
+}
+
+.cell-text::-webkit-scrollbar {
+  display: none;
+}
+
+/* On small/mobile screens, shrink the cell text so long words fit better. */
+@media (max-width: 600px) {
+  .cell-text {
+    font-size: clamp(3px, 11cqmin, 18px);
+  }
+
+  .cell-text:focus {
+    font-size: clamp(3px, 7cqmin, 13px);
+  }
+}
+
+/* Chromium workaround: an empty flex contenteditable has no editable line box,
+   so the caret renders at the bottom-left and the cell can become impossible to
+   re-enter after all text is deleted. A generated zero-width space gives the
+   flex container a real, centered line box without affecting textContent,
+   storage, or font fitting. */
+.cell-text:empty::before {
+  content: "\200B";
+  display: block;
 }

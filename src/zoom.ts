@@ -11,15 +11,6 @@ import type { BoardElements } from "./grid.ts";
 
 type ZoomState = { level: "board" } | { level: "block"; index: number };
 
-function placeCaretEnd(el: HTMLElement): void {
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  range.collapse(false);
-  const sel = window.getSelection();
-  sel?.removeAllRanges();
-  sel?.addRange(range);
-}
-
 export function initZoom({ viewport, board }: BoardElements): void {
   let state: ZoomState = { level: "board" };
 
@@ -56,19 +47,9 @@ export function initZoom({ viewport, board }: BoardElements): void {
       return;
     }
 
-    // Block view: focus the cell's text so the user can type. Empty cells
-    // collapse to zero size, so route taps anywhere on the cell to its text
-    // element. We preventDefault and focus manually because the cell itself is
-    // not focusable, so the native mousedown would otherwise steal focus.
-    const cell = target.closest<HTMLElement>(".cell");
-    if (cell) {
-      const text = cell.querySelector<HTMLElement>(".cell-text");
-      if (text) {
-        event.preventDefault();
-        text.focus();
-        placeCaretEnd(text);
-      }
-    }
+    // Block view: do nothing. The `.cell-text` fills the cell (absolute,
+    // inset:0) and is contenteditable, so we let native pointer behavior handle
+    // focus, click-to-place-caret, and click-drag text selection.
   });
 
   // Tap outside the board to zoom back out.

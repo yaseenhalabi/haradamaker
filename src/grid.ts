@@ -28,6 +28,19 @@ export function buildBoard(mount: HTMLElement): BoardElements {
       cell.dataset.block = String(b);
       cell.dataset.cell = String(c);
 
+      // Visual hierarchy of a Harada board:
+      //   - goal:   the very center cell of the center block (block 4, cell 4).
+      //   - pillar: the 8 cells around the goal AND each outer block's center,
+      //             which are mirrors of each other (block 4, cell B) ↔ (B, 4).
+      //   - action: every other cell.
+      const isCenterBlock = b === 4;
+      const isCenterCell = c === 4;
+      if (isCenterBlock && isCenterCell) {
+        cell.classList.add("goal");
+      } else if (isCenterBlock !== isCenterCell) {
+        cell.classList.add("pillar");
+      }
+
       const text = document.createElement("div");
       text.className = "cell-text";
       text.dataset.block = String(b);
