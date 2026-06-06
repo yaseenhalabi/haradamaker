@@ -86,7 +86,7 @@ function drawCellText(
 
     if (lines.length * lineH > maxH) continue;
 
-    // Fits — paint it centred.
+    // Fits — paint it centered.
     ctx.fillStyle = color;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";

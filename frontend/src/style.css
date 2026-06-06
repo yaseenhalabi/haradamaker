@@ -45,13 +45,13 @@ body {
   flex-direction: row;
 }
 
-/* View mode (and mobile) reclaim the sidebar's width so the board centres. */
+/* View mode (and mobile) reclaim the sidebar's width so the board centers. */
 body.mode-view #app {
   --sidebar-w: 0px;
 }
 
-/* The board's column: holds the mode switch + viewport, centred in the space
-   left of the sidebar (so in Edit mode the board sits right of screen centre). */
+/* The board's column: holds the mode switch + viewport, centered in the space
+   left of the sidebar (so in Edit mode the board sits right of screen center). */
 .board-area {
   position: relative;
   flex: 1 1 auto;
@@ -318,7 +318,7 @@ body.mode-view #app {
 
 /* ─── Sidebar (Edit-mode guide) ──────────────────────────────────────────────
    Desktop: a fixed-width column on the left, in the flex flow. View mode hides
-   it (and #app zeroes --sidebar-w so the board recentres). Mobile: collapses to
+   it (and #app zeroes --sidebar-w so the board recenters). Mobile: collapses to
    an off-canvas overlay opened by the top-left button. */
 .sidebar {
   flex: none;
@@ -548,10 +548,10 @@ body.mode-view .sidebar {
   position: absolute;
   left: 0;
   right: 0;
-  /* Vertically centred in the gap between the board's bottom and the screen
+  /* Vertically centered in the gap between the board's bottom and the screen
      bottom. That gap measures `--app-pad + free/2` (bottom padding + half the
-     leftover after centring the switch+gap+board stack); halve it for the
-     midpoint, then translateY(50%) centres the text line on it. */
+     leftover after centering the switch+gap+board stack); halve it for the
+     midpoint, then translateY(50%) centers the text line on it. */
   bottom: calc(
     (
         var(--app-pad) +

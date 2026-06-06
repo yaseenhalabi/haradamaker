@@ -22,7 +22,7 @@ if (shareMatch) {
 createSidebar(mount);
 
 // The board lives in its own column to the right of the sidebar so it can be
-// centred within the remaining space (and full-screen-centred in View mode).
+// centered within the remaining space (and full-screen-centered in View mode).
 const boardArea = document.createElement("div");
 boardArea.className = "board-area";
 mount.appendChild(boardArea);
