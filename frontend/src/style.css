@@ -88,10 +88,6 @@ body.mode-view #app {
   padding: 0 4px;
 }
 
-.mobile-actions {
-  display: none;
-}
-
 .external-browser-dialog {
   position: fixed;
   inset: 0;
@@ -688,8 +684,8 @@ body.mode-view .sidebar {
   padding: 0 10px;
   border: none;
   border-radius: 8px;
-  background: var(--bw-black);
-  color: var(--bw-white);
+  background: transparent;
+  color: var(--bw-black);
   font: inherit;
   cursor: pointer;
 }
@@ -709,7 +705,7 @@ body.mode-view .sidebar {
 .color-picker__preview-swatch {
   width: 10px;
   height: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.32);
 }
 
 .color-picker__menu {
@@ -1121,63 +1117,101 @@ body.mode-view .sidebar {
 
 @media (max-width: 600px) {
   #app {
-    --app-pad: 14px;
-    --toolbar-h: 44px;
-    --mobile-actions-h: 104px;
-    --control-stack-extra: calc(var(--mobile-actions-h) + var(--stack-gap));
+    --app-pad: 12px;
+    --switch-h: 36px;
+    --toolbar-h: 80px;
+    --stack-gap: 10px;
   }
 
   .toolbar {
     width: min(var(--board-size), calc(100vw - 24px));
     min-height: var(--toolbar-h);
-    height: var(--toolbar-h);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    justify-content: initial;
-    gap: 10px;
-    padding: 0;
-  }
-
-  .mobile-actions {
-    position: relative;
-    z-index: 80;
-    flex: none;
-    width: min(var(--board-size), calc(100vw - 24px));
-    min-height: var(--mobile-actions-h);
+    height: auto;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    align-content: center;
     justify-content: center;
-    gap: 10px;
+    gap: 5px;
+    padding: 0;
+  }
+
+  .toolbar::after {
+    content: "";
+    order: 1;
+    flex: 0 0 100%;
+    height: 0;
   }
 
   .mode-switch {
-    width: 100%;
+    order: 0;
+    width: min(44vw, 158px);
     min-width: 0;
   }
 
+  .mode-switch__option {
+    min-width: 0;
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
   .cloud {
+    order: 3;
     display: contents;
   }
 
+  .color-picker {
+    order: 2;
+  }
+
   .color-picker__toggle {
-    height: 44px;
-    width: 92px;
+    height: var(--switch-h);
+    width: 54px;
+    gap: 4px;
+    padding: 0 5px;
+  }
+
+  .color-picker__toggle svg,
+  .export__toggle svg,
+  .cloud__text-button svg,
+  .cloud__icon-button svg,
+  .cloud-picker__button svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .color-picker__preview-swatch {
+    width: 8px;
+    height: 15px;
   }
 
   .color-picker__menu {
     width: min(230px, calc(100vw - 24px));
   }
 
-  .export__toggle {
-    height: 44px;
-    padding: 0 14px;
+  .export {
+    order: 3;
   }
 
-  .cloud-picker,
+  .export__toggle {
+    height: var(--switch-h);
+    gap: 5px;
+    padding: 0 6px;
+    font-size: 12px;
+  }
+
+  .cloud-picker {
+    order: 4;
+    width: min(135px, calc(100vw - 255px));
+  }
+
   .cloud-picker__button {
-    width: min(100%, 280px);
+    width: 100%;
+    height: var(--switch-h);
+    gap: 5px;
+    padding: 0 6px 0 8px;
+    font-size: 12px;
   }
 
   .cloud-picker__menu {
@@ -1192,18 +1226,26 @@ body.mode-view .sidebar {
   }
 
   .cloud__auth-slot {
-    width: auto;
+    order: 1;
+    width: 70px;
+    height: var(--switch-h);
     flex: none;
   }
 
   .cloud__text-button {
-    height: 44px;
-    padding: 0 2px;
+    height: var(--switch-h);
+    gap: 4px;
+    padding: 0;
+    font-size: 12px;
+  }
+
+  .cloud-action {
+    order: 5;
   }
 
   .cloud__icon-button {
-    width: 52px;
-    height: 44px;
+    width: 40px;
+    height: var(--switch-h);
   }
 
 }

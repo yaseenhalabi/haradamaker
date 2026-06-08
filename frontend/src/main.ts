@@ -37,46 +37,11 @@ initEditing(elements);
 initDone(elements);
 initZoom(elements);
 
-const mobileActions = document.createElement("div");
-mobileActions.className = "mobile-actions";
-boardArea.appendChild(mobileActions);
-
 const modeSwitch = createModeSwitch(elements.viewport);
 toolbar.appendChild(modeSwitch);
-const colorPicker = createColorSchemePicker(toolbar);
-const persistenceControls = createPersistenceControls(toolbar, elements);
-const exportMenu = createExportMenu(toolbar);
-
-const mobileQuery = window.matchMedia("(max-width: 600px)");
-function placeResponsiveControls() {
-  if (mobileQuery.matches) {
-    toolbar.replaceChildren(modeSwitch, persistenceControls.auth);
-    mobileActions.replaceChildren(
-      colorPicker,
-      exportMenu,
-      persistenceControls.picker,
-      persistenceControls.save,
-      persistenceControls.share,
-    );
-    return;
-  }
-
-  persistenceControls.root.replaceChildren(
-    persistenceControls.picker,
-    persistenceControls.auth,
-    persistenceControls.save,
-    persistenceControls.share,
-  );
-  toolbar.replaceChildren(
-    modeSwitch,
-    colorPicker,
-    persistenceControls.root,
-    exportMenu,
-  );
-  mobileActions.replaceChildren();
-}
-placeResponsiveControls();
-mobileQuery.addEventListener("change", placeResponsiveControls);
+createColorSchemePicker(toolbar);
+createPersistenceControls(toolbar, elements);
+createExportMenu(toolbar);
 
 // Mobile-only hint below the board while zoomed in. Tapping it lands outside the
 // viewport, which the document pointerdown handler treats as a zoom-out.
