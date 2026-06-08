@@ -178,7 +178,7 @@ export function exportJSON(): void {
 }
 
 // Top-right button that opens a small menu of the export actions above.
-export function createExportMenu(mount: HTMLElement): void {
+export function createExportMenu(mount: HTMLElement): HTMLElement {
   const wrap = document.createElement("div");
   wrap.className = "export";
 
@@ -228,6 +228,7 @@ export function createExportMenu(mount: HTMLElement): void {
   wrap.appendChild(toggle);
   wrap.appendChild(menu);
   mount.appendChild(wrap);
+  return wrap;
 }
 
 export function exportPrint(): void {

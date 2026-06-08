@@ -81,7 +81,7 @@ function applyColorScheme(scheme: ColorScheme): void {
   style.setProperty("--grid-goal-text", scheme.goalText);
 }
 
-export function createColorSchemePicker(mount: HTMLElement): void {
+export function createColorSchemePicker(mount: HTMLElement): HTMLElement {
   const wrap = document.createElement("div");
   wrap.className = "color-picker";
 
@@ -168,4 +168,5 @@ export function createColorSchemePicker(mount: HTMLElement): void {
   wrap.appendChild(menu);
   mount.appendChild(wrap);
   select(getCurrentColorScheme());
+  return wrap;
 }

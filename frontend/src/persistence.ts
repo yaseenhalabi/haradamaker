@@ -22,6 +22,14 @@ const LOGIN_REQUIRED_MESSAGE = "You need to log in before saving or sharing.";
 const UNTITLED_GOAL = "Untitled goal";
 const AUTOSAVE_INTERVAL_MS = 2000;
 
+export interface PersistenceControls {
+  root: HTMLElement;
+  picker: HTMLElement;
+  auth: HTMLElement;
+  save: HTMLElement;
+  share: HTMLElement;
+}
+
 function boardTitle(cells: Record<string, string>): string {
   return (cells["4-4"] ?? "").trim().slice(0, 120) || "Untitled board";
 }
@@ -33,7 +41,7 @@ function shareUrl(url: string): string {
 export function createPersistenceControls(
   mount: HTMLElement,
   elements: BoardElements,
-): void {
+): PersistenceControls {
   let activeBoardId = localStorage.getItem(ACTIVE_BOARD_KEY);
   let applyingRemote = false;
   let autosaveTimer = 0;
@@ -477,4 +485,12 @@ export function createPersistenceControls(
     console.error(error);
     setSaveState("error");
   });
+
+  return {
+    root: wrap,
+    picker,
+    auth: authSlot,
+    save: saveAction,
+    share: shareAction,
+  };
 }

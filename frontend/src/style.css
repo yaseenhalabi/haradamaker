@@ -36,6 +36,7 @@ body {
   --app-pad: 20px;
   --switch-h: 40px;
   --toolbar-h: 40px;
+  --control-stack-extra: 0px;
   --stack-gap: 12px;
   --sidebar-w: 320px; /* width reserved for the Edit-mode sidebar (0 otherwise) */
   /* The board's square side length: the smaller of the width left of the sidebar
@@ -43,7 +44,10 @@ body {
      zoom-hint so the hint can sit in the gap below the board. */
   --board-size: min(
     calc(100vw - var(--sidebar-w) - 2 * var(--app-pad)),
-    calc(100vh - 2 * var(--app-pad) - var(--toolbar-h) - var(--stack-gap))
+    calc(
+      100vh - 2 * var(--app-pad) - var(--toolbar-h) - var(--stack-gap) -
+        var(--control-stack-extra)
+    )
   );
   height: 100%;
   width: 100%;
@@ -82,6 +86,10 @@ body.mode-view #app {
   justify-content: center;
   gap: 10px;
   padding: 0 4px;
+}
+
+.mobile-actions {
+  display: none;
 }
 
 .external-browser-dialog {
@@ -1113,37 +1121,44 @@ body.mode-view .sidebar {
 
 @media (max-width: 600px) {
   #app {
-    --toolbar-h: 96px;
+    --app-pad: 14px;
+    --toolbar-h: 44px;
+    --mobile-actions-h: 104px;
+    --control-stack-extra: calc(var(--mobile-actions-h) + var(--stack-gap));
   }
 
   .toolbar {
     width: min(var(--board-size), calc(100vw - 24px));
-    height: auto;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px 12px;
-  }
-
-  .mode-switch {
-    order: 0;
-    width: min(58vw, 220px);
-  }
-
-  .cloud {
-    order: 1;
-    flex: 1 1 100%;
-    justify-content: center;
+    min-height: var(--toolbar-h);
+    height: var(--toolbar-h);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
+    justify-content: initial;
+    gap: 10px;
+    padding: 0;
+  }
+
+  .mobile-actions {
+    position: relative;
+    z-index: 80;
+    flex: none;
+    width: min(var(--board-size), calc(100vw - 24px));
+    min-height: var(--mobile-actions-h);
+    display: flex;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
   }
 
-  .export {
-    order: 0;
+  .mode-switch {
+    width: 100%;
+    min-width: 0;
   }
 
-  .color-picker {
-    order: 0;
+  .cloud {
+    display: contents;
   }
 
   .color-picker__toggle {
@@ -1177,8 +1192,13 @@ body.mode-view .sidebar {
   }
 
   .cloud__auth-slot {
-    width: 92px;
+    width: auto;
     flex: none;
+  }
+
+  .cloud__text-button {
+    height: 44px;
+    padding: 0 2px;
   }
 
   .cloud__icon-button {
