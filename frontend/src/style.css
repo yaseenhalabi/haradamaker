@@ -1203,7 +1203,9 @@ body.mode-view .sidebar {
 
   .cloud-picker {
     order: 4;
-    width: min(135px, calc(100vw - 255px));
+    flex: 1 1 150px;
+    min-width: 0;
+    max-width: 260px;
   }
 
   .cloud-picker__button {
